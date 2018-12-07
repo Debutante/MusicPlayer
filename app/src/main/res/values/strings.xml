@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">MusicPlayerLearn1</string>
+    <string name="initial">Idle</string>
+    <string name="path">musicPath</string>
+    <string name="begin">00:00</string>
+    <string name="end">99:99</string>
+    <string name="previous">上一首</string>
+    <string name="play">播放</string>
+    <string name="pause">暂停</string>
+    <string name="stop">停止</string>
+    <string name="quit">退出</string>
+    <string name="next">下一首</string>
+    <string name="mode_seq">顺序播放</string>
+    <string name="mode_loop">单曲循环</string>
+    <string name="songs_list">歌曲列表</string>
+    <string name="display">听歌模式</string>
+</resources>
