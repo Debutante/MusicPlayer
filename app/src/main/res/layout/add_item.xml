@@ -4,7 +4,8 @@
     android:orientation="horizontal" >
 
     <LinearLayout
-        android:layout_width="360dp"
+        android:layout_width="0dp"
+        android:layout_weight="9"
         android:layout_height="60dp"
         android:orientation="vertical">
 
@@ -14,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:layout_marginLeft="5dp"/>
+            android:layout_marginLeft="10dp"/>
 
         <TextView
             android:id="@+id/item_tv2"
@@ -23,7 +24,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/colorGray"
             android:gravity="center_vertical"
-            android:layout_marginLeft="30dp"/>
+            android:layout_marginLeft="35dp"/>
 
     </LinearLayout>
 
@@ -31,7 +32,8 @@
 
     <CheckBox
         android:id="@+id/item_cb"
-        android:layout_width="50dp"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="60dp"
         android:focusable="false"
         android:clickable="false"

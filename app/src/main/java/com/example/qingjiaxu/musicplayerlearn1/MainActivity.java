@@ -29,6 +29,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements DisplayAdapter.ItemOnClick, DisplayAdapter.ItemOnDelete{
 
     protected MusicService musicService;
+    protected Intent intent;
     protected TextView currentTime;
     protected TextView endTime;
     protected SeekBar seekBar;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
     protected Button nextBtn;
     protected Button modeBtn;
     protected Button displayBtn;
+    protected Button sensorBtn;
     protected TextView state;
     protected TextView musicPath;
     protected ArrayList<String> songPaths;
@@ -51,7 +53,9 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
     protected ArrayList<String> list2;
     protected int position = -1;
     protected Boolean loop = false;
+    private ShakeUtils mShakeUtils = null;
     private static final String TAG = "MainActivity";
+
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
         // bindService成功后回调onServiceConnected函数
@@ -104,8 +108,24 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_songs:
+                seekBar.setEnabled(false);
+                handler.removeCallbacks(runnable);
+                if (musicService != null) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            state.setText(R.string.stop);  // 状态变为stop
+                            playBtn.setText(R.string.play);  // 按钮文本变为play
+                        }
+                    });
+                    // 调用service的stop方法
+                    musicService.stop();
+                    stopService(intent);
+                    unbindService(serviceConnection);
+                }
                 Intent intent = new Intent(MainActivity.this, AddSongs.class);
                 startActivity(intent);
+                finish();
         }
         return true;
     }
@@ -127,6 +147,8 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
         quitBtn = findViewById(R.id.quit);
         modeBtn = findViewById(R.id.mode);
         displayBtn = findViewById(R.id.display);
+        sensorBtn = findViewById(R.id.sensor);
+
         seekBar = findViewById(R.id.seekBar);
         state = findViewById(R.id.state);
         musicPath = findViewById(R.id.musicPath);
@@ -134,19 +156,21 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
         endTime = findViewById(R.id.endTime);
         imageView = findViewById(R.id.imageView);
         seekBar.setEnabled(false);
+        mShakeUtils = new ShakeUtils( this );
         
         if (getIntent().getExtras() != null) {
             Bundle bundle = getIntent().getExtras();
             //songPaths = bundle.getStringArrayList("songPaths");
             songPaths = bundle.getStringArrayList("songPaths");
-            Log.d(TAG, "onCreate: "+songPaths.toString());
+//            Log.d(TAG, "onCreate: "+songPaths.toString());
 
             list1 = new ArrayList<>();
             list2 = new ArrayList<>();//音乐列表
 
             for (int i = 0; i < songPaths.size(); i++) {
                 //list.add(file.getAbsolutePath().substring(14, file.getAbsolutePath().length()));
-                list1.add(songPaths.get(i).substring(14, songPaths.get(i).indexOf("_")));//获取文件的绝对路径
+                //list1.add(songPaths.get(i).substring(14, songPaths.get(i).indexOf("_")));//获取文件的绝对路径
+                list1.add(songPaths.get(i).substring(33, songPaths.get(i).indexOf("_")));//获取文件的绝对路径
                 list2.add(songPaths.get(i).substring(songPaths.get(i).indexOf("_") + 1, songPaths.get(i).indexOf(".")));
             }
 
@@ -162,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
 
             imageView.setVisibility(View.INVISIBLE);
 
-            Intent intent = new Intent(this, MusicService.class);
+            intent = new Intent(this, MusicService.class);
             bundle = new Bundle();
             bundle.putStringArrayList("songPaths", songPaths);
             intent.putExtras(bundle);
@@ -211,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
                     }
                     // 调用service的play方法
                     if (musicService != null) {
-                        Toast.makeText(musicService, ""+position, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(musicService, ""+position, Toast.LENGTH_SHORT).show();
                         musicService.play();
                     } else{
                         Toast.makeText(musicService, "重启服务", Toast.LENGTH_SHORT).show();
@@ -305,6 +329,32 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
             }
         });
 
+        sensorBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String text = sensorBtn.getText().toString();
+                if (text.equals("开摇一摇")) {
+                    mShakeUtils.setOnShakeListener(new ShakeUtils.OnShakeListener() {
+                        @Override
+                        public void onShake() {
+                            randomSong();
+                        }
+                    });
+                    sensorBtn.setText("关摇一摇");
+                }
+                else if (text.equals("关摇一摇")) {
+                    sensorBtn.setText("开摇一摇");
+                    mShakeUtils.setOnShakeListener(new ShakeUtils.OnShakeListener() {
+                        @Override
+                        public void onShake() {
+                            Toast.makeText(MainActivity.this,"快去开启摇一摇吧",Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+
+            }
+        });
+
         // 设置拖动条的监听器
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -325,7 +375,6 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
             }
         });
 
-
     }
 
     public void previousSong(int position) {
@@ -337,9 +386,11 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
             handler.postDelayed(runnable, 10);
             playBtn.setText(R.string.pause);
             musicService.start(songPaths.get(previousIndex));
-            musicPath.setText(songPaths.get(previousIndex).substring(14));
+            //musicPath.setText(songPaths.get(previousIndex).substring(14));
+            musicPath.setText(songPaths.get(previousIndex).substring(33));
             changeColor(position, previousIndex);
-            Log.e(TAG, "previousSong: " + previousIndex);
+            musicService.mediaPlayer.setOnCompletionListener(new CompletionListener());
+//            Log.e(TAG, "previousSong: " + previousIndex);
         }
         else {
             seekBar.setEnabled(false);
@@ -361,7 +412,9 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
             Log.e(TAG, "nextSong: "+nextIndex);
             musicService.start(songPaths.get(nextIndex));
             changeColor(position, nextIndex);
-            musicPath.setText(songPaths.get(nextIndex).substring(14));
+            //musicPath.setText(songPaths.get(nextIndex).substring(14));
+            musicPath.setText(songPaths.get(nextIndex).substring(33));
+            musicService.mediaPlayer.setOnCompletionListener(new CompletionListener());
 
         }
         else {
@@ -370,6 +423,21 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
             musicPath.setText("musicPath");
             musicService.stop();
         }
+    }
+
+    public void randomSong() {
+        int index = (int)(Math.random() * songPaths.size());
+        seekBar.setEnabled(true);
+        // 调用postDelayed方法更新UI
+        handler.postDelayed(runnable, 10);
+        playBtn.setText(R.string.pause);
+//        Log.e(TAG, "randomSong: "+index);
+        musicService.start(songPaths.get(index));
+        changeColor(this.position, index);
+        this.position = index;
+        //musicPath.setText(songPaths.get(nextIndex).substring(14));
+        musicPath.setText(songPaths.get(index).substring(33));
+        Toast.makeText(this, "已为您切换到\n" + songPaths.get(index).substring(33), Toast.LENGTH_SHORT).show();
     }
 
     public void changeColor(int former, int latter) {
@@ -409,7 +477,8 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
         state.setText(R.string.play);
         playBtn.setText(R.string.pause);
         musicService.start(songPaths.get(position));
-        musicPath.setText(songPaths.get(position).substring(14));
+        //musicPath.setText(songPaths.get(position).substring(14));
+        musicPath.setText(songPaths.get(position).substring(33));
         changeColor(this.position, position);
         musicService.mediaPlayer.setOnCompletionListener(new CompletionListener());
         this.position = position;
@@ -420,6 +489,7 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
         @Override
         public void onCompletion(MediaPlayer mp) {
             nextSong(position);
+            Log.e(TAG, "onCompletion: "+position);
         }
     }
 
@@ -441,7 +511,8 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
             if (position < songPaths.size()) {
                 musicService.start(songPaths.get(position));
                 changeColor(position, position);
-                musicPath.setText(songPaths.get(position).substring(14));
+                //musicPath.setText(songPaths.get(position).substring(14));
+                musicPath.setText(songPaths.get(position).substring(33));
             }
 
             else if (loop == true && songPaths.get(0) != null) {
@@ -464,13 +535,24 @@ public class MainActivity extends AppCompatActivity implements DisplayAdapter.It
             this.position -= 1;
         }
 
-        Log.e(TAG, "testOnDelete: " + this.position);
+//        Log.e(TAG, "testOnDelete: " + this.position);
     }
 
 //    @Override
 //    public void testOnCompletion(int position) {
 //        nextSong(position, "complete");
 //    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mShakeUtils.onResume();
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mShakeUtils.onPause( );
+    }
 
     @Override
     protected void onDestroy() {

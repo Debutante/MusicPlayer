@@ -5,31 +5,33 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.TextView;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
 
 public class MusicService extends Service {
     private static final String TAG = "MusicService";
-    //private int currentPosition;
+    private RemoteViews remoteViews;
     private ArrayList<String> songPaths;
     private Boolean mode = false;
+    private static String url ="";
+    final String ACTION_PLAY_TOGGLE = "play";
+    final String ACTION_STOP_TOGGLE = "stop";
     //private MusicOnCompletion musicOnCompletion;
 
     // 这里设置为public属性，以便activity里面能直接获取
-    public MediaPlayer mediaPlayer;
+    public static MediaPlayer mediaPlayer;
     // 记录当前状态
     private String curState = "";
 
@@ -80,14 +82,17 @@ public class MusicService extends Service {
     public void onCreate() {
         super.onCreate();
         mediaPlayer = new MediaPlayer();
-
-
+        remoteViews = new RemoteViews(this.getPackageName(),
+                R.layout.notification_layout);
+//        Log.e(TAG, "onCreate: "+mediaPlayer.toString());
+        getNotificationManager().notify(1, getNotification("歌名","艺术家"));
 
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(onClickReceiver);
         if (mediaPlayer != null) {  // 停止并释放资源
             mediaPlayer.stop();
             mediaPlayer.release();
@@ -96,15 +101,24 @@ public class MusicService extends Service {
 
     public void start(String url) {
         try {
+            this.url =url;
             // 创建mediaPlayer
             //currentPosition = position;
+
             mediaPlayer.reset();
 
+            mediaPlayer = new MediaPlayer();
+
             mediaPlayer.setDataSource(url);
-            getNotificationManager().notify(1, getNotification(url.substring(14, url.indexOf("_")),
-                    url.substring(url.indexOf("_") + 1, url.indexOf("."))));
+
             mediaPlayer.prepare();
+            //getNotificationManager().notify(1, getNotification(url.substring(14, url.indexOf("_")), url.substring(url.indexOf("_") + 1, url.indexOf("."))));
+
+            getNotificationManager().notify(1, getNotification(url.substring(33, url.indexOf("_")), url.substring(url.indexOf("_") + 1, url.indexOf("."))));
+
             mediaPlayer.start();
+//            Log.e(TAG, "start: "+mediaPlayer.toString());
+
             //mediaPlayer = MediaPlayer.create(this, R.raw.beautiful);
             // 通过MediaPlayer.create方法创建，已经初始化，不需要prepare
             mediaPlayer.setLooping(mode);  // 设置循环播放
@@ -121,7 +135,9 @@ public class MusicService extends Service {
     }
 
     public void play() {
+
         if (mediaPlayer.isPlaying()) {  // 当前状态是播放，点击按钮即暂停
+            Log.e(TAG, "play: "+mediaPlayer.toString());
             mediaPlayer.pause();
             curState = "暂停";
         } else {
@@ -136,6 +152,9 @@ public class MusicService extends Service {
                 e.printStackTrace();
             }
         }
+//        if (remoteViews != null) {
+//            remoteViews.setCharSequence(R.id.play, "setText", curState);
+//        }
     }
 
     public void stop() {
@@ -159,15 +178,46 @@ public class MusicService extends Service {
         return (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
     }
 
+    BroadcastReceiver onClickReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(ACTION_PLAY_TOGGLE)) {
+                //在这里处理点击事件
+                if (curState.equals(""))
+                    curState = "播放";
+                remoteViews.setCharSequence(R.id.play, "setText", curState);
+                //getNotificationManager().notify(1, getNotification(url.substring(14, url.indexOf("_")), url.substring(url.indexOf("_") + 1, url.indexOf("."))));
+                getNotificationManager().notify(1, getNotification(url.substring(33, url.indexOf("_")), url.substring(url.indexOf("_") + 1, url.indexOf("."))));
+                play();
+            }
+            else if (intent.getAction().equals(ACTION_STOP_TOGGLE)) {
+                stop();
+            }
+
+        }
+    };
+
     private Notification getNotification(String name, String singer) {
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_PLAY_TOGGLE);
+        filter.addAction(ACTION_STOP_TOGGLE);
+        this.registerReceiver(onClickReceiver, filter);
+        Intent buttonIntent1 = new Intent(ACTION_PLAY_TOGGLE);
+        PendingIntent pendButtonIntent1 = PendingIntent.getBroadcast(this, 0, buttonIntent1, 0);
+        Intent buttonIntent2 = new Intent(ACTION_STOP_TOGGLE);
+        PendingIntent pendButtonIntent2 = PendingIntent.getBroadcast(this, 0, buttonIntent2, 0);
+
         Intent intent = new Intent(this, MainActivity.class);
         intent.setAction(Intent.ACTION_MAIN);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this,0,intent,0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,0, intent,0);
         Notification.Builder builder;
-        RemoteViews remoteViews = new RemoteViews(this.getPackageName(),
-                R.layout.notification_layout);// 获取remoteViews（参数一：包名；参数二：布局资源）
+        // 获取remoteViews（参数一：包名；参数二：布局资源）
         remoteViews.setTextViewText(R.id.item_tv1, name);
         remoteViews.setTextViewText(R.id.item_tv2, singer);
+        remoteViews.setOnClickPendingIntent(R.id.play, pendButtonIntent1);
+        remoteViews.setOnClickPendingIntent(R.id.stop, pendButtonIntent2);
 
         NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
@@ -188,7 +238,7 @@ public class MusicService extends Service {
                     .setContent(remoteViews)
                     .setContentIntent(pendingIntent)
                     .setAutoCancel(true);
-            //manager.notify(1, notification);
+
         }
         else
         {
@@ -198,7 +248,6 @@ public class MusicService extends Service {
                     .setContentText("This is content text")
                     .setContentIntent(pendingIntent)
                     .setSmallIcon(R.mipmap.ic_launcher);
-            //manager.notify(1,notification);
         }
         return builder.build();
     }

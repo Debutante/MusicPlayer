@@ -4,8 +4,9 @@
     android:orientation="horizontal" >
 
     <LinearLayout
-        android:layout_width="220dp"
-        android:layout_height="50dp"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="60dp"
         android:orientation="vertical"
         android:padding="5dp">
 
@@ -32,22 +33,25 @@
 
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical">
         <Button
             android:id="@+id/play"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="@string/play"
-            android:textColor="@color/colorWhite"/>
+            android:text="@string/pause"
+            android:textColor="@color/colorBlack"/>
 
         <Button
             android:id="@+id/stop"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/stop"
-            android:textColor="@color/colorWhite"/>
+            android:textColor="@color/colorBlack"/>
     </LinearLayout>
 
 </LinearLayout>

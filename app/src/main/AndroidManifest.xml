@@ -3,18 +3,22 @@
     package="com.example.qingjiaxu.musicplayerlearn1">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="com.example.broadcast.permission"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="com.example.broadcast.permission" />
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/icon_2"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".AddSongs">
-            <!--android:launchMode="singleTop">-->
+
+            <!-- android:launchMode="singleTop"> -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,14 +31,13 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".MainActivity"
-            android:launchMode="singleTop">
+        <activity android:name=".MainActivity"></activity>
 
-        </activity>
-
-        <receiver android:name=".MusicService$PlayerReceiver"
+        <receiver
+            android:name=".MusicService$PlayerReceiver"
             android:permission="com.example.broadcast.permission" />
 
+        <activity android:name=".RecordActivity"></activity>
     </application>
 
 </manifest>

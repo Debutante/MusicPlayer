@@ -9,6 +9,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -27,6 +29,26 @@ public class AddSongs extends AppCompatActivity {
     private File[] songFiles;
     private ArrayList<String> songPaths;
     private static final String TAG = "AddSongs";
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.add, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.record_songs:
+                Intent intent = new Intent(AddSongs.this, RecordActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putStringArrayList("songPaths", songPaths);
+                intent.putExtras(bundle);
+                startActivity(intent);
+                finish();
+        }
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,13 +73,15 @@ public class AddSongs extends AppCompatActivity {
         list2 = new ArrayList<>();//音乐列表
         songPaths = new ArrayList<>();
 
-        String sdpath = "sdcard/Music"; //获得手机SD卡路径
+        //String sdpath = "sdcard/Music"; //获得手机SD卡路径
+        String sdpath = "/storage/emulated/0/xiami/audios";
         File path = new File(sdpath);      //获得SD卡的mp3文件夹
         //返回以.mp3结尾的文件 (自定义文件过滤)
         songFiles = path.listFiles(new MusicFilter(".mp3"));
         for (File file : songFiles) {
             //list.add(file.getAbsolutePath().substring(14, file.getAbsolutePath().length()));
-            list1.add(file.getAbsolutePath().substring(14, file.getAbsolutePath().indexOf("_")));//获取文件的绝对路径
+            //list1.add(file.getAbsolutePath().substring(14, file.getAbsolutePath().indexOf("_")));//获取文件的绝对路径
+            list1.add(file.getAbsolutePath().substring(33, file.getAbsolutePath().indexOf("_")));//获取文件的绝对路径
             list2.add(file.getAbsolutePath().substring(file.getAbsolutePath().indexOf("_") + 1, file.getAbsolutePath().indexOf(".")));
         }
 
@@ -98,4 +122,6 @@ public class AddSongs extends AppCompatActivity {
         intent.putExtras(bundle);
         startActivity(intent);
     }
+
+
 }

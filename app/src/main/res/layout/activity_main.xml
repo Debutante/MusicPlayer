@@ -5,7 +5,7 @@
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/cover1"
+        android:src="@drawable/ballet_2"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
         android:scaleType="center"/>
@@ -19,7 +19,7 @@
         android:gravity="center"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginTop="410dp"
+        android:layout_marginTop="460dp"
         android:background="@color/colorPrimary"/>
 
     <TextView
@@ -27,7 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/initial"
-        android:layout_marginTop="430dp"
+        android:layout_marginTop="480dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:textSize="20sp"
@@ -37,7 +37,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="470dp"
+        android:layout_marginTop="540dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:orientation="horizontal"
@@ -74,7 +74,7 @@
         android:orientation="horizontal"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginTop="510dp"
+        android:layout_marginTop="580dp"
         android:layout_centerHorizontal="true"
         android:background="@color/colorWhite">
 
@@ -114,7 +114,7 @@
         android:orientation="horizontal"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginTop="560dp"
+        android:layout_marginTop="630dp"
         android:layout_centerHorizontal="true"
         android:background="@color/colorWhite">
 
@@ -139,6 +139,13 @@
             android:text="@string/display"
             android:textColor="@color/colorWhite"/>
 
+        <Button
+            android:id="@+id/sensor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sensor"
+            android:textColor="@color/colorWhite"/>
+
     </LinearLayout>
 
 
@@ -152,7 +159,7 @@
         android:layout_marginTop="10dp"
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="380dp"
+        android:layout_height="450dp"
         android:visibility="invisible">
 
     </android.support.v7.widget.RecyclerView>
